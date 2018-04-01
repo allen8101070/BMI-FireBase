@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://www.gstatic.com/firebasejs/4.12.1/firebase.js"></script>
+</head>
+
+<body>
+
+    <input id="height" type="text" placeholder="請輸入身高">
+    <input id="weight" type="text" placeholder="請輸入體重">
+    <button id="send">送出</button>
+    <ul id="list">
+    </ul>
+    
+
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyBSkiDg_3wqY5NtuoiWWixBXE5Xy_wZ4B4",
+            authDomain: "hex-node-ch5-homework.firebaseapp.com",
+            databaseURL: "https://hex-node-ch5-homework.firebaseio.com",
+            projectId: "hex-node-ch5-homework",
+            storageBucket: "hex-node-ch5-homework.appspot.com",
+            messagingSenderId: "305497448082"
+        };
+        firebase.initializeApp(config);
+
+
+        // 以下自己的程式---------------------------------
+        //身高
+        var height = document.getElementById("height");
+        //體重
+        var weight = document.getElementById("weight");
+        var send = document.getElementById("send");
+        var list = document.getElementById("list");
+
+        //資料庫
+        var BMIBase = firebase.database().ref("BMIBase");
+
+        //送出到資料庫
+        send.addEventListener("click", function (e) {
+            BMIBase.push({ content: {height:height.value,weight:weight.value} });
+        });
+        
+        //顯示內容
+        BMIBase.on('value', function (snapshot) {
+            var str = '';
+            var data = snapshot.val();
+            for (const i in data) {
+                console.log(i);
+                str += '<li data-key="' + i + '">' + "身高："+ data[i].content.height + "體重：" + data[i].content.weight + '</li>'
+            }
+            list.innerHTML = str;
+        })
+
+
+        //刪除資料庫內容
+        list.addEventListener("click", function (e) {
+            if (e.target.nodeName == "LI") {
+                var key = e.target.dataset.key;
+                BMIBase.child(key).remove();
+            }
+        });
+
+
+
+
+    </script>
+</body>
+
+</html>
