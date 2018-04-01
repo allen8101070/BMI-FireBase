@@ -16,11 +16,11 @@
     <button id="send">送出</button>
     <ul id="list">
     </ul>
-    
+
 
     <script>
         // Initialize Firebase
-        var config = {
+        let config = {
             apiKey: "AIzaSyBSkiDg_3wqY5NtuoiWWixBXE5Xy_wZ4B4",
             authDomain: "hex-node-ch5-homework.firebaseapp.com",
             databaseURL: "https://hex-node-ch5-homework.firebaseio.com",
@@ -33,27 +33,61 @@
 
         // 以下自己的程式---------------------------------
         //身高
-        var height = document.getElementById("height");
+        let height = document.getElementById("height");
         //體重
-        var weight = document.getElementById("weight");
-        var send = document.getElementById("send");
-        var list = document.getElementById("list");
+        let weight = document.getElementById("weight");
+        let send = document.getElementById("send");
+        let list = document.getElementById("list");
 
         //資料庫
-        var BMIBase = firebase.database().ref("BMIBase");
+        let BMIBase = firebase.database().ref("BMIBase");
 
         //送出到資料庫
         send.addEventListener("click", function (e) {
-            BMIBase.push({ content: {height:height.value,weight:weight.value} });
+
+            //取得現在時間
+            let userDate = new Date();
+            userDate = userDate.getTime()
+
+            //送進資料庫的內容
+            var user = {
+                height: height.value,
+                weight: weight.value,
+                time: userDate
+            }
+            BMIBase.push({ content: user });
         });
-        
+
         //顯示內容
-        BMIBase.on('value', function (snapshot) {
-            var str = '';
-            var data = snapshot.val();
+        BMIBase.on("value", function (snapshot) {
+            let str = "";
+            let t = "";
+            let reverseData = [];
+            let data = snapshot.val();
+            //將unix時間轉換成現在時間函式
+            function changeTime(time){
+                t = new Date(time);
+                t = t.getFullYear() + "年" + (t.getMonth() + 1) + "月" + t.getDate() + "日";
+            }
+            //反轉資料
+            snapshot.forEach(function (item) {
+                let i = item.val()
+                //取得上層key值
+                i.content.key = item.key;
+                reverseData.push(i);
+            });
+            reverseData.reverse();
+
+            //將data資料改成反轉後的資料
+            data = reverseData;
+
             for (const i in data) {
-                console.log(i);
-                str += '<li data-key="' + i + '">' + "身高："+ data[i].content.height + "體重：" + data[i].content.weight + '</li>'
+                changeTime(data[i].content.time)
+                str += '<li data-key="' + data[i].content.key + '">' 
+                str += "身高：" + data[i].content.height + " ";
+                str += "體重：" + data[i].content.weight + " ";
+                str += "時間：" + t + " ";
+                str += '</li>'
             }
             list.innerHTML = str;
         })
@@ -63,6 +97,7 @@
         list.addEventListener("click", function (e) {
             if (e.target.nodeName == "LI") {
                 var key = e.target.dataset.key;
+                console.log(e)
                 BMIBase.child(key).remove();
             }
         });
